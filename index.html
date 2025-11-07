@@ -1,12 +1,270 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8">
-    <title>NXC Scarlet</title>
-  </head>
-  <body style="text-align:center; margin-top:100px; font-family:sans-serif;">
-    <h1>Xin chào! 👋</h1>
-    <p>Đây là trang web của <b>Scarlet</b>.</p>
-    <p>Website đang chạy bằng <i>GitHub Pages</i> và domain riêng <b>nxcscarlet.xyz</b>.</p>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>NXC Scarlet — Pokémon Account Manager</title>
+  <meta name="description" content="Quản lý nick Pokémon — giao diện công nghệ tương lai" />
+  <style>
+    :root{
+      --bg:#071026; --card:#0f1724; --glass: rgba(255,255,255,0.04);
+      --accent1: #7C3AED; --accent2: #06B6D4; --muted: #98a8b9;
+      --glass-2: rgba(255,255,255,0.02);
+      --radius:16px;
+      --mono: 'Segoe UI Mono', 'Roboto Mono', monospace;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,'Helvetica Neue',Arial; background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.12), transparent), radial-gradient(900px 500px at 90% 80%, rgba(6,182,212,0.06), transparent), var(--bg); color:#e6eef8}
+    a{color:inherit}
+    .container{max-width:1100px;margin:36px auto;padding:28px}
+
+    header{display:flex;align-items:center;gap:18px}
+    .logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent1),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-family:var(--mono);box-shadow:0 8px 30px rgba(2,6,23,0.6)}
+    .title{line-height:1}
+    h1{margin:0;font-size:20px}
+    p.lead{margin:0;color:var(--muted)}
+
+    .topbar{margin-top:18px;display:flex;gap:12px;align-items:center}
+    .search{flex:1;display:flex;gap:8px}
+    .input, .select{background:var(--glass);border:1px solid rgba(255,255,255,0.04);padding:10px 12px;border-radius:12px;color:inherit}
+    .btn{background:linear-gradient(90deg,var(--accent1),var(--accent2));border:none;padding:10px 14px;border-radius:12px;color:white;font-weight:600;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+
+    main{margin-top:20px}
+    .grid{display:grid;grid-template-columns:1fr 340px;gap:20px}
+
+    /* account list */
+    .panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius);padding:16px;border:1px solid var(--glass-2);box-shadow:0 6px 30px rgba(2,6,23,0.6)}
+    .list{display:grid;gap:12px}
+    .card{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border:1px solid rgba(255,255,255,0.02)}
+    .avatar{width:56px;height:56px;border-radius:12px;flex-shrink:0;background:linear-gradient(135deg,#111,#222);display:grid;place-items:center;font-weight:700;color:var(--accent2);font-family:var(--mono)}
+    .meta{flex:1}
+    .name{font-weight:700}
+    .small{font-size:13px;color:var(--muted)}
+    .tags{display:flex;gap:6px;margin-top:6px}
+    .chip{background:rgba(255,255,255,0.03);padding:6px 8px;border-radius:999px;font-size:12px}
+    .actions{display:flex;gap:8px}
+
+    /* right column */
+    .sidebar .panel{padding:16px}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    .form-row{display:flex;gap:8px;margin-bottom:10px}
+    textarea{resize:vertical}
+
+    footer{margin-top:18px;text-align:center;color:var(--muted);font-size:13px}
+
+    /* small screens */
+    @media(max-width:900px){.grid{grid-template-columns:1fr;}.sidebar{order:2}}
+
+    /* subtle animations */
+    .glow{position:relative}
+    .glow:before{content:'';position:absolute;inset:-2px;background:linear-gradient(90deg, rgba(124,58,237,0.08), rgba(6,182,212,0.06));filter:blur(18px);opacity:0;transition:opacity .4s;border-radius:inherit}
+    .glow:hover:before{opacity:1}
+
+    .empty{padding:28px;text-align:center;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">NXC</div>
+      <div class="title">
+        <h1>NXC Scarlet — Pokémon Account Manager</h1>
+        <p class="lead">Giao diện công nghệ tương lai — quản lý nick, ghi chú, tag, export nhanh.</p>
+      </div>
+    </header>
+
+    <div class="topbar">
+      <div class="search">
+        <input id="q" class="input" placeholder="Tìm kiếm nick, tag..." />
+        <select id="filter" class="select">
+          <option value="all">Tất cả</option>
+          <option value="active">Active</option>
+          <option value="banned">Banned</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="btnExport" class="btn ghost">Export JSON</button>
+        <button id="btnClear" class="btn ghost">Clear demo</button>
+        <button id="openForm" class="btn">+ Thêm nick</button>
+      </div>
+    </div>
+
+    <main class="grid">
+      <section>
+        <div class="panel">
+          <h3 style="margin-top:0">Danh sách nick</h3>
+          <div id="list" class="list"></div>
+          <div id="empty" class="empty" style="display:none">Chưa có nick nào — bấm "Thêm nick" để bắt đầu.</div>
+        </div>
+
+        <div class="panel" style="margin-top:14px;display:flex;justify-content:space-between;align-items:center">
+          <div style="color:var(--muted)">Cập nhật tự động lưu vào trình duyệt (localStorage)</div>
+          <div style="font-size:13px;color:var(--muted)">Phiên bản demo • Không gửi data ra server</div>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <div class="panel">
+          <h4 style="margin-top:0">Thêm / Sửa Nick</h4>
+          <div id="formWrap">
+            <label for="nickname">Tên nick</label>
+            <input id="nickname" class="input" placeholder="Ví dụ: Scarlet-01" />
+
+            <label for="game">Game / Server</label>
+            <input id="game" class="input" placeholder="Pokémon - JP server" />
+
+            <div class="form-row">
+              <div style="flex:1">
+                <label for="status">Trạng thái</label>
+                <select id="status" class="select"><option value="active">Active</option><option value="banned">Banned</option><option value="sleep">Sleeping</option></select>
+              </div>
+              <div style="width:120px">
+                <label for="tag">Tag nhanh</label>
+                <input id="tag" class="input" placeholder="e.g. IV, Promo" />
+              </div>
+            </div>
+
+            <label for="note">Ghi chú</label>
+            <textarea id="note" rows="4" class="input" placeholder="Thêm thông tin: password hint, lvl, chú ý..."></textarea>
+
+            <div style="display:flex;gap:8px;margin-top:10px">
+              <button id="saveBtn" class="btn">Lưu</button>
+              <button id="cancelBtn" class="btn ghost">Hủy</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel" style="margin-top:12px">
+          <h4 style="margin-top:0">Quick tips</h4>
+          <ul style="margin:0;padding-left:18px;color:var(--muted)">
+            <li> Sử dụng tag để lọc nhanh. </li>
+            <li> Export JSON để lưu bản sao. </li>
+            <li> Dữ liệu lưu cục bộ — hãy backup trước khi đổi máy. </li>
+          </ul>
+        </div>
+      </aside>
+    </main>
+
+    <footer>
+      NXC Scarlet • Pokémon Account Manager • Built with ❤️ — lưu bằng localStorage
+    </footer>
+  </div>
+
+  <script>
+    // Minimal app (no frameworks) — localStorage persistence
+    const KEY = 'nxc_accounts_v1';
+    let editingId = null;
+
+    const sample = [
+      {id: id(), nick:'Scarlet-01', game:'Pokémon JP', status:'active', tags:['IV'], note:'lv50 • promo code used'},
+      {id: id(), nick:'BlueVault', game:'Pokémon US', status:'sleep', tags:['backup'], note:'backup account'},
+      {id: id(), nick:'TradeBox', game:'Pokémon EU', status:'banned', tags:['ban'], note:'temp banned'}
+    ];
+
+    function id(){return 'x'+Math.random().toString(36).slice(2,9)}
+
+    function load(){
+      const raw = localStorage.getItem(KEY);
+      if(raw) return JSON.parse(raw);
+      localStorage.setItem(KEY, JSON.stringify(sample));
+      return sample;
+    }
+    function save(list){localStorage.setItem(KEY, JSON.stringify(list));}
+
+    const listEl = document.getElementById('list');
+    const emptyEl = document.getElementById('empty');
+
+    function render(){
+      const q = document.getElementById('q').value.toLowerCase();
+      const filter = document.getElementById('filter').value;
+      const data = load().filter(it=>{
+        if(filter!=='all' && it.status!==filter) return false;
+        if(!q) return true;
+        return it.nick.toLowerCase().includes(q)||it.game.toLowerCase().includes(q)||(it.tags||[]).join(' ').toLowerCase().includes(q);
+      });
+      listEl.innerHTML='';
+      if(!data.length){emptyEl.style.display='block';return}
+      emptyEl.style.display='none';
+
+      data.forEach(it=>{
+        const card = document.createElement('div'); card.className='card glow';
+        const av = document.createElement('div'); av.className='avatar'; av.textContent=it.nick.slice(0,2).toUpperCase();
+        const meta = document.createElement('div'); meta.className='meta';
+        const nm = document.createElement('div'); nm.className='name'; nm.textContent = it.nick;
+        const sm = document.createElement('div'); sm.className='small'; sm.textContent = it.game + ' • ' + it.status;
+        const tags = document.createElement('div'); tags.className='tags';
+        (it.tags||[]).forEach(t=>{const c = document.createElement('div');c.className='chip';c.textContent=t;tags.appendChild(c)});
+        const actions = document.createElement('div'); actions.className='actions';
+        const e = document.createElement('button'); e.className='btn ghost'; e.textContent='Edit'; e.onclick=()=>openForEdit(it.id);
+        const d = document.createElement('button'); d.className='btn ghost'; d.textContent='Delete'; d.onclick=()=>del(it.id);
+        actions.appendChild(e); actions.appendChild(d);
+
+        meta.appendChild(nm); meta.appendChild(sm); meta.appendChild(tags);
+        card.appendChild(av); card.appendChild(meta); card.appendChild(actions);
+        listEl.appendChild(card);
+      })
+    }
+
+    function openForEdit(idVal){
+      const items = load();
+      const found = items.find(x=>x.id===idVal);
+      if(!found) return;
+      editingId = found.id;
+      document.getElementById('nickname').value = found.nick;
+      document.getElementById('game').value = found.game;
+      document.getElementById('status').value = found.status;
+      document.getElementById('tag').value = (found.tags||[]).join(',');
+      document.getElementById('note').value = found.note||'';
+    }
+
+    function del(idVal){
+      if(!confirm('Xác nhận xóa?')) return;
+      let items = load(); items = items.filter(x=>x.id!==idVal); save(items); render();
+    }
+
+    document.getElementById('openForm').addEventListener('click', ()=>{
+      editingId = null;
+      document.getElementById('nickname').value=''; document.getElementById('game').value=''; document.getElementById('status').value='active'; document.getElementById('tag').value=''; document.getElementById('note').value='';
+      window.scrollTo({top:0,behavior:'smooth'});
+    });
+
+    document.getElementById('saveBtn').addEventListener('click', ()=>{
+      const nick = document.getElementById('nickname').value.trim();
+      if(!nick){alert('Nhập tên nick');return}
+      const game = document.getElementById('game').value.trim();
+      const status = document.getElementById('status').value;
+      const tags = document.getElementById('tag').value.split(',').map(s=>s.trim()).filter(Boolean);
+      const note = document.getElementById('note').value.trim();
+
+      let items = load();
+      if(editingId){
+        items = items.map(x=> x.id===editingId ? {...x, nick, game, status, tags, note} : x);
+      } else {
+        items.unshift({id:id(), nick, game, status, tags, note});
+      }
+      save(items); render();
+      editingId = null;
+      // clear form
+      document.getElementById('nickname').value=''; document.getElementById('game').value=''; document.getElementById('tag').value=''; document.getElementById('note').value='';
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', ()=>{editingId=null;document.getElementById('nickname').value='';document.getElementById('game').value='';document.getElementById('tag').value='';document.getElementById('note').value='';});
+
+    document.getElementById('q').addEventListener('input', ()=>render());
+    document.getElementById('filter').addEventListener('change', ()=>render());
+
+    document.getElementById('btnExport').addEventListener('click', ()=>{
+      const data = localStorage.getItem(KEY) || '[]';
+      const blob = new Blob([data], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='nxc_accounts.json'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('btnClear').addEventListener('click', ()=>{ if(confirm('Xóa demo data?')){ localStorage.removeItem(KEY); location.reload(); }});
+
+    // initial render
+    render();
+  </script>
+</body>
 </html>
