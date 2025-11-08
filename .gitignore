@@ -1,0 +1,20 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Backup files
+*_backup.js
+script_backup.js
+
+# Documentation (tùy chọn - có thể commit nếu muốn)
+# *.md
+
